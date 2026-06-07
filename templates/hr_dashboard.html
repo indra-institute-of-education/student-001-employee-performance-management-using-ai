@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>HR Analysis Dashboard</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Employee Profile -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h4>{{ employee.name|default('Employee Name') }}</h4>
+                            <p class="text-muted">
+                                <i class="fas fa-envelope me-2"></i>{{ employee.email|default('email@example.com') }}<br>
+                                <i class="fas fa-briefcase me-2"></i>{{ employee.role_name|default('Role') }} | {{ employee.dept_name|default('Dept') }}
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            {% if performance_level %}
+                            <span class="badge fs-5 
+                                {% if performance_level == 'High' %}bg-success
+                                {% elif performance_level == 'Medium' %}bg-warning text-dark
+                                {% else %}bg-danger{% endif %} p-3">
+                                {{ performance_level }}
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary p-3">Not Rated</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- ===== PERFORMANCE SCORECARD (placed ABOVE the gauge) ===== -->
+                    <div class="row mb-4">
+                        <div class="col-md-6 mx-auto">
+                            <div class="card text-center border-0 shadow-sm">
+                                <div class="card-body py-4">
+                                    <h5 class="text-muted mb-3">Performance Score</h5>
+                                    <div class="d-flex justify-content-center align-items-center mb-2">
+                                        <span class="display-3 me-3">{{ performance_score|default(2.8) }}</span>
+                                        <span class="badge fs-3 
+                                            {% if performance_level == 'High' %}bg-success
+                                            {% elif performance_level == 'Medium' %}bg-warning text-dark
+                                            {% elif performance_level == 'Low' %}bg-danger
+                                            {% else %}bg-secondary{% endif %} px-4 py-3">
+                                            {{ performance_level|default('Medium') }}
+                                        </span>
+                                    </div>
+                                    <p class="text-muted">out of 5.0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== GAUGE CHART (below the scorecard) ===== -->
+                    <div class="row mb-4">
+                        <div class="col-md-10 mx-auto">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="text-center mb-3">Performance Gauge</h5>
+                                    <!-- Canvas for the gauge -->
+                                    <div style="position: relative; width: 320px; height: 160px; margin: 0 auto;">
+                                        <canvas id="gaugeCanvas" width="320" height="160"></canvas>
+                                    </div>
+                                    <!-- Legend with ranges -->
+                                    <div class="row text-center mt-3">
+                                        <div class="col-4">
+                                            <span style="color:#dc3545; font-weight:bold;">Low</span><br>
+                                            <small>0 – 2.5</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <span style="color:#ffc107; font-weight:bold;">Medium</span><br>
+                                            <small>2.5 – 3.5</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <span style="color:#28a745; font-weight:bold;">High</span><br>
+                                            <small>3.5 – 5</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Send Email Section -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0"><i class="fas fa-envelope me-2"></i>Send Performance Report</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>Send the performance evaluation results to the employee's email address:</p>
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>{{ employee.email|default('email@example.com') }}</strong>
+                                    </div>
+                                    <form method="POST" action="{{ url_for('hr_analysis', emp_id=employee.emp_id) }}">
+                                        <input type="hidden" name="send_email" value="1">
+                                        <button type="submit" class="btn btn-info btn-lg w-100" {% if email_sent %}disabled{% endif %}>
+                                            <i class="fas fa-paper-plane me-2"></i>
+                                            {% if email_sent %}Email Sent{% else %}Send Email to Employee{% endif %}
+                                        </button>
+                                    </form>
+                                    {% if email_sent %}
+                                    <div class="alert alert-success mt-3">
+                                        <i class="fas fa-check-circle me-2"></i>Email sent successfully!
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                            <a href="{{ url_for('employees_list') }}" class="btn btn-secondary btn-lg me-2">
+                                <i class="fas fa-users me-2"></i>View All Employees
+                            </a>
+                            <a href="{{ url_for('index') }}" class="btn btn-success btn-lg">
+                                <i class="fas fa-plus-circle me-2"></i>New Evaluation
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge.fs-5 {
+        font-size: 1.2rem;
+        padding: 10px 20px;
+    }
+    .badge.fs-3 {
+        font-size: 1.5rem;
+        padding: 12px 24px;
+    }
+    .display-3 {
+        font-size: 3.5rem;
+        font-weight: 300;
+        color: #0d6efd;
+    }
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    {% if performance_score %}
+    const targetScore = {{ performance_score }};
+    const maxScore = 5;
+
+    const canvas = document.getElementById('gaugeCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const width = canvas.width;
+    const height = canvas.height;
+
+    const centerX = width / 2;
+    const centerY = height - 15;
+    const radius = width * 0.38;
+
+    let currentScore = 0;
+
+    function scoreToAngle(value) {
+        return Math.PI + (value / maxScore) * Math.PI;
+    }
+
+    function drawSegment(start, end, color) {
+        const startAngle = scoreToAngle(start);
+        const endAngle = scoreToAngle(end);
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.lineWidth = 42;
+        ctx.strokeStyle = color;
+        ctx.lineCap = "round";
+        ctx.shadowColor = "rgba(0,0,0,0.15)";
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+    }
+
+    function drawGauge(score) {
+        ctx.clearRect(0, 0, width, height);
+
+        // Segments
+        drawSegment(0, 2.5, "#ff6b6b");     // Low
+        drawSegment(2.5, 3.5, "#f7b731");   // Medium
+        drawSegment(3.5, 5, "#20bf6b");     // High
+
+        // Labels
+        const labels = [
+            { text: "Low", value: 1.25 },
+            { text: "Medium", value: 3 },
+            { text: "High", value: 4.25 }
+        ];
+
+        labels.forEach(label => {
+            const angle = scoreToAngle(label.value);
+            const x = centerX + (radius - 55) * Math.cos(angle);
+            const y = centerY + (radius - 55) * Math.sin(angle);
+
+            ctx.fillStyle = "#2f3542";
+            ctx.font = "bold 15px Segoe UI";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(label.text, x, y);
+        });
+
+        // Needle
+        const needleAngle = scoreToAngle(score);
+        const needleLength = radius - 30;
+
+        const needleX = centerX + needleLength * Math.cos(needleAngle);
+        const needleY = centerY + needleLength * Math.sin(needleAngle);
+
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(needleX, needleY);
+        ctx.strokeStyle = "#2f3542";
+        ctx.lineWidth = 5;
+        ctx.stroke();
+
+        // Center hub
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 32, 0, 2 * Math.PI);
+        ctx.fillStyle = "#ffffff";
+        ctx.shadowColor = "rgba(0,0,0,0.25)";
+        ctx.shadowBlur = 15;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Score text
+        ctx.fillStyle = "#2f3542";
+        ctx.font = "bold 22px Segoe UI";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(score.toFixed(1), centerX, centerY);
+    }
+
+    function animate() {
+        if (currentScore < targetScore) {
+            currentScore += 0.05;
+            drawGauge(currentScore);
+            requestAnimationFrame(animate);
+        } else {
+            drawGauge(targetScore);
+        }
+    }
+
+    animate();
+    {% endif %}
+});
+</script>
+
+{% endblock %}

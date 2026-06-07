@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-robot me-2"></i>Model Selection</h4>
+            </div>
+            <div class="card-body">
+                <p class="lead">Select machine learning models for performance prediction:</p>
+                
+                <form action="{{ url_for('employee_form') }}" method="get" id="modelForm">
+                    <div class="row mb-4">
+                        {% if accuracies and accuracies|length > 0 %}
+                            {% for model, accuracy in accuracies.items() %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 {% if loop.first %}border-primary{% endif %}">
+                                    <div class="card-body text-center">
+                                        <div class="form-check">
+                                            <input class="form-check-input model-checkbox" type="checkbox" 
+                                                   name="models" value="{{ model }}" id="model{{ loop.index }}"
+                                                   {% if loop.first %}checked{% endif %}>
+                                            <label class="form-check-label fw-bold" for="model{{ loop.index }}">
+                                                {{ model }}
+                                            </label>
+                                        </div>
+                                        <div class="mt-3">
+                                            <span class="badge bg-success fs-6">Accuracy: {{ (accuracy * 100)|int }}%</span>
+                                        </div>
+                                        <div class="mt-2 text-muted small">
+                                            {% if model == 'Logistic Regression' %}
+                                                <i class="fas fa-chart-line"></i> Linear classifier
+                                            {% elif model == 'Decision Tree' %}
+                                                <i class="fas fa-tree"></i> Tree-based
+                                            {% else %}
+                                                <i class="fas fa-leaf"></i> Ensemble method
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="col-12">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>No models available!</strong> Please train the models first.
+                                </div>
+                                <div class="text-center p-4">
+                                    <p>Click the button below to train the models:</p>
+                                    <a href="{{ url_for('train_models_route') }}" class="btn btn-success btn-lg">
+                                        <i class="fas fa-brain me-2"></i>Train Models Now
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if accuracies and accuracies|length > 0 %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> Select at least one model for prediction. Multiple models can be selected for comparison.
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-arrow-right me-2"></i>Continue to Employee Registration
+                        </button>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        
+        <!-- Stats Card -->
+        <div class="card mt-4 shadow-sm">
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h3 class="text-primary">{{ accuracies|length if accuracies else 0 }}</h3>
+                        <p class="text-muted">Available Models</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 class="text-success">1-5</h3>
+                        <p class="text-muted">Rating Scale</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 class="text-info">3</h3>
+                        <p class="text-muted">Performance Levels</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('modelForm')?.addEventListener('submit', function(e) {
+        const checkboxes = document.querySelectorAll('.model-checkbox:checked');
+        if (checkboxes.length === 0) {
+            e.preventDefault();
+            alert('Please select at least one model');
+        }
+    });
+</script>
+{% endblock %}

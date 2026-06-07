@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-user-plus me-2"></i>Employee Information</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('employee_form') }}" id="employeeForm">
+                    <div class="row">
+                        <!-- Personal Information -->
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Full Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required 
+                                   placeholder="Enter employee name">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="email" name="email" required 
+                                   placeholder="employee@company.com">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="age" class="form-label">Age *</label>
+                            <input type="number" class="form-control" id="age" name="age" required 
+                                   min="18" max="65" placeholder="25">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="department" class="form-label">Department *</label>
+                            <select class="form-select" id="department" name="department" required>
+                                <option value="">Select Department</option>
+                                <option value="sales">Sales</option>
+                                <option value="hr">HR</option>
+                                <option value="it">IT</option>
+                                <option value="operation">Operation</option>
+                                <option value="finance">Finance</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="education" class="form-label">Education *</label>
+                            <select class="form-select" id="education" name="education" required>
+                                <option value="">Select Education</option>
+                                <option value="diploma">Diploma</option>
+                                <option value="bachelors">Bachelors</option>
+                                <option value="masters">Masters</option>
+                                <option value="mba">MBA</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="jobrole" class="form-label">Job Role *</label>
+                            <select class="form-select" id="jobrole" name="jobrole" required>
+                                <option value="">Select Job Role</option>
+                                <option value="executive">Executive</option>
+                                <option value="analyst">Analyst</option>
+                                <option value="scientist">Scientist</option>
+                                <option value="manager">Manager</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="experience" class="form-label">Years of Experience *</label>
+                            <input type="number" class="form-control" id="experience" name="experience" 
+                                   required min="0" max="40" step="1" placeholder="5">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="income" class="form-label">Monthly Income ($) *</label>
+                            <input type="number" class="form-control" id="income" name="income" 
+                                   required min="10000" max="200000" step="1000" placeholder="50000">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="trainings" class="form-label">Trainings Completed *</label>
+                            <input type="number" class="form-control" id="trainings" name="trainings" 
+                                   required min="0" max="20" placeholder="3">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="worklife" class="form-label">Work-Life Balance *</label>
+                            <select class="form-select" id="worklife" name="worklife" required>
+                                <option value="">Select Rating</option>
+                                <option value="1">1 - Very Poor</option>
+                                <option value="2">2 - Poor</option>
+                                <option value="3">3 - Good</option>
+                                <option value="4">4 - Excellent</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="satisfaction" class="form-label">Job Satisfaction *</label>
+                            <select class="form-select" id="satisfaction" name="satisfaction" required>
+                                <option value="">Select Rating</option>
+                                <option value="1">1 - Very Dissatisfied</option>
+                                <option value="2">2 - Dissatisfied</option>
+                                <option value="3">3 - Satisfied</option>
+                                <option value="4">4 - Very Satisfied</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="overtime" class="form-label">Overtime *</label>
+                            <select class="form-select" id="overtime" name="overtime" required>
+                                <option value="">Select Option</option>
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save & Continue
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Form validation
+    document.getElementById('employeeForm').addEventListener('submit', function(e) {
+        const age = parseInt(document.getElementById('age').value);
+        const income = parseInt(document.getElementById('income').value);
+        
+        if (age < 18 || age > 65) {
+            e.preventDefault();
+            alert('Age must be between 18 and 65');
+            return;
+        }
+        
+        if (income < 10000 || income > 200000) {
+            e.preventDefault();
+            alert('Monthly income must be between $10,000 and $200,000');
+            return;
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4><i class="fas fa-users me-2"></i>Employees List</h4>
+                    <a href="{{ url_for('employee_form') }}" class="btn btn-light btn-sm">
+                        <i class="fas fa-user-plus me-1"></i>Add New Employee
+                    </a>
+                </div>
+                <div class="card-body">
+                    <!-- Search and Filter -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search by name or email...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="deptFilter">
+                                <option value="">All Departments</option>
+                                <option value="Sales">Sales</option>
+                                <option value="Hr">HR</option>
+                                <option value="It">IT</option>
+                                <option value="Operation">Operation</option>
+                                <option value="Finance">Finance</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="levelFilter">
+                                <option value="">All Levels</option>
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-secondary w-100" onclick="resetFilters()">Reset</button>
+                        </div>
+                    </div>
+                    
+                    {% if employees %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="employeesTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Department</th>
+                                    <th>Role</th>
+                                    <th>Performance</th>
+                                    <th>Score</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for emp in employees %}
+                                <tr>
+                                    <td>{{ emp.emp_id }}</td>
+                                    <td>{{ emp.name }}</td>
+                                    <td>{{ emp.email }}</td>
+                                    <td>{{ emp.dept_name }}</td>
+                                    <td>{{ emp.role_name }}</td>
+                                    <td>
+                                        {% if emp.performance_level %}
+                                            <span class="badge {% if emp.performance_level == 'High' %}bg-success{% elif emp.performance_level == 'Medium' %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ emp.performance_level }}
+                                            </span>
+                                        {% elif emp.performance_score %}
+                                            <span class="badge bg-info">Pending</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Not Evaluated</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if emp.performance_score %}
+                                            {{ emp.performance_score }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('hr_analysis', emp_id=emp.emp_id) }}" class="btn btn-sm btn-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if not emp.performance_score %}
+                                        <a href="{{ url_for('team_leader_form', emp_id=emp.emp_id) }}" class="btn btn-sm btn-warning" title="Evaluate">
+                                            <i class="fas fa-clipboard-list"></i>
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Summary Cards -->
+                    <div class="row mt-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h3>{{ employees|length }}</h3>
+                                    <p>Total Employees</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h3>{{ employees|selectattr('performance_level', 'equalto', 'High')|list|length }}</h3>
+                                    <p>High Performers</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-dark">
+                                <div class="card-body text-center">
+                                    <h3>{{ employees|selectattr('performance_level', 'equalto', 'Medium')|list|length }}</h3>
+                                    <p>Medium Performers</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body text-center">
+                                    <h3>{{ employees|selectattr('performance_level', 'equalto', 'Low')|list|length }}</h3>
+                                    <p>Low Performers</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                        <p class="lead">No employees found.</p>
+                        <p>Click the button below to add your first employee.</p>
+                        <a href="{{ url_for('employee_form') }}" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>Add Employee
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Search and filter functionality
+    document.getElementById('searchInput').addEventListener('keyup', filterTable);
+    document.getElementById('deptFilter').addEventListener('change', filterTable);
+    document.getElementById('levelFilter').addEventListener('change', filterTable);
+    
+    function filterTable() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const deptFilter = document.getElementById('deptFilter').value.toLowerCase();
+        const levelFilter = document.getElementById('levelFilter').value;
+        const rows = document.querySelectorAll('#employeesTable tbody tr');
+        
+        rows.forEach(row => {
+            const name = row.cells[1].textContent.toLowerCase();
+            const email = row.cells[2].textContent.toLowerCase();
+            const dept = row.cells[3].textContent.toLowerCase();
+            const levelCell = row.cells[5].querySelector('.badge');
+            const level = levelCell ? levelCell.textContent.trim() : '';
+            
+            const matchesSearch = name.includes(searchTerm) || email.includes(searchTerm);
+            const matchesDept = !deptFilter || dept === deptFilter;
+            const matchesLevel = !levelFilter || level === levelFilter;
+            
+            row.style.display = (matchesSearch && matchesDept && matchesLevel) ? '' : 'none';
+        });
+    }
+    
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('deptFilter').value = '';
+        document.getElementById('levelFilter').value = '';
+        filterTable();
+    }
+</script>
+{% endblock %}
